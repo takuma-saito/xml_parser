@@ -8,6 +8,10 @@
 #include "term.h"
 #include "io.h"
 
+#define GREEN "\033[32m"
+#define BLUE  "\033[36m"
+#define C_END "\033[0m"
+
 void usage(void) {
   printf("xml-parser: [-d] file\n" \
          "  -d: output dot program format\n" \
@@ -56,10 +60,11 @@ void xml_parse(node_t *node, term_t *curr_term) {
   /* fflush(stdout); */
   switch(curr_term->type) {
   case TERM_START:
+    next_term = get_term();
     node->term = curr_term;
     node->children = new_children_node(node);
     node = node->children;
-    xml_parse(node, get_term());
+    xml_parse(node, next_term);
     break;
   case TERM_END:
     next_term = get_term(); 
@@ -83,9 +88,42 @@ void xml_parse(node_t *node, term_t *curr_term) {
     xml_parse(node, get_term());
     break;
   case TERM_ELEMENT:
+    if (node->term == NULL) {
+      node->term = curr_term;
+    }
+    else {
+      node = new_next_node(node, curr_term);
+    }
+    xml_parse(node, get_term());
     break;
   default:
     break;
+  }
+}
+
+/* ノードのデバック出力 */
+void xml_node_debug(node_t *node, int depth) {
+  node_t *ptr;
+  prop_t *prop;
+  for (ptr = node; ptr != NULL; ptr = ptr->next) {
+    switch(ptr->term->type) {
+    case TERM_ELEMENT:
+    case TERM_CONTENT:
+      printf("[content] %d -> '%s'\n", depth, ptr->term->name);
+      break;
+    case TERM_START:
+      printf("[node:%d] %d -> %s\n", ptr->term->type, depth, ptr->term->name);
+      for (prop = ptr->term->property; prop != NULL; prop = prop->next) {
+        printf("[prop]      - [%s] %s\n", prop->key, prop->value);
+      } 
+      xml_node_debug(ptr->children, depth + 1);
+      break;
+    default:
+      printf("[debug]: term->name -> %s\n", ptr->term->name);
+      printf("[debug]: term->type -> %d\n", ptr->term->type);
+      /* assert(false); */
+      break;
+    }
   }
 }
 
@@ -102,69 +140,40 @@ void show_line(int depth, bool *line_num) {
   }
 }
 
-/* ノードのデバック出力 */
-void xml_node_debug(node_t *node, int depth) {
-  node_t *ptr;
-  for (ptr = node; ptr != NULL; ptr = ptr->next) {
-    switch(ptr->term->type) {
-    case TERM_ELEMENT:
-    case TERM_CONTENT:
-      printf("[content] %d -> '%s'\n", depth, ptr->term->name);
-      break;
-    case TERM_START:
-      printf("[node:%d] %d -> %s\n", ptr->term->type, depth, ptr->term->name);
-      xml_node_debug(ptr->children, depth + 1);
-      break;
-    default:
-      printf("[debug]: term->name -> %s\n", ptr->term->name);
-      printf("[debug]: term->type -> %d\n", ptr->term->type);
-      /* assert(false); */
-      break;
-    }
-  }
-}
+#define PRINT(...)                 \
+  printf("[%d]:", depth);          \
+  show_line(depth, line_num);      \
+  printf(__VA_ARGS__)
 
 /* xml解析木を深さ優先探索で表示 */
 void xml_node_show(node_t *node, int depth, bool *line_num) {
   node_t *ptr;
-  prop_t *prop_ptr;
+  prop_t *prop;
   for (ptr = node; ptr != NULL; ptr = ptr->next) {
-    printf("[%d]:", depth);
-    show_line(depth, line_num);
     switch(ptr->term->type) {
     case TERM_ELEMENT:
-    case TERM_CONTENT:
-      printf("  ┗ \033[32m%s\033[0m\n", ptr->term->name);
-      for (prop_ptr = ptr->term->property->next; prop_ptr != NULL; prop_ptr = prop_ptr->next) {
-        printf("\033[36m[%d]:\033[0m", depth);
-        show_line(depth, line_num);
-        printf("      - [%s] %s\n", prop_ptr->key, prop_ptr->value);
-      }
-      break;
-    case TERM_EOF:             /* 終端ノード */
-      printf("  ┗ \033[32m%s\033[0m\n", ptr->term->name);
+    case TERM_CONTENT:          /* 終端 */
+      PRINT("  |\n");
+      PRINT("   -- %s%s%s\n", GREEN, ptr->term->name, C_END);
       break;
     case TERM_START:              /* 節 */
-      printf("  ┗ %s\n", ptr->term->name);
-      for (prop_ptr = ptr->term->property->next; prop_ptr != NULL; prop_ptr = prop_ptr->next) {
-        printf("\033[36m[%d]:\033[0m", depth);
-        show_line(depth, line_num);
-        printf("      - [%s] %s\n", prop_ptr->key, prop_ptr->value);
-      }
+      PRINT("  |\n");
+      PRINT("   -- %s\n", ptr->term->name);
+      for (prop = ptr->term->property; prop != NULL; prop = prop->next) {
+        PRINT("      - [%s] %s\n", prop->key, prop->value);
+      } 
+      /* 隣の要素がなければ, ラインを引かない */
+      line_num[depth] = (ptr->next != NULL) ? true : false;
+      xml_node_show(ptr->children, depth + 1, line_num);
       break;
+    case TERM_EOF:
     case TERM_COMMENT:
       break;
-    default:                    /* ありえないことが起こった */
+    default:
+      /* ありえないことが起こった */
       printf("%d\n", ptr->term->type);
       err_exit("unkown error\n");
       break;
-    }
-    //printf("## name = %s, depth = %d \n", ptr->name, depth);
-    if (ptr->children != NULL) {
-      if (ptr->next == NULL && ptr->children) {
-        line_num[depth] = false;
-      }
-      xml_node_show(ptr->children, depth + 1, line_num);
     }
   }
 }
@@ -195,7 +204,7 @@ void xml_version(xml_t *xml) {
         break;
       }
       if (MAXLINE - 1 <= pos) {
-        err_exit("version情報の書式が不正です.\n");
+        err_exit("illegal version format");
       }
       line[++pos] = ch;
       ch = getch();
@@ -203,7 +212,7 @@ void xml_version(xml_t *xml) {
     line[++pos] = '\0';
     ret = sscanf(line, "<?xml version=\"%lf\" encoding=\"%s\" ?>", &version, encoding);
     if (ret < 0) {
-        err_exit("version情報の書式が不正です.\n<?xml version=\" \" encoding=\"\"> のバージョン情報を最初に記入して下さい.");
+        err_exit("illegal version format");
     }
     encoding[strlen(encoding) - 1] = '\0';
   }
@@ -284,7 +293,7 @@ static bool *alloc_line(node_t *root) {
   get_max_depth(root, 1);
   line_num = malloc(sizeof(int) * gb_max_depth);
   for (i = 0; i < gb_max_depth; i++) {
-    line_num[i] = true;
+    line_num[i] = false;
   }
   return line_num;
 }
@@ -310,8 +319,8 @@ void xml_main(xml_t *xml) {
   node = alloc(sizeof(node_t));
   xml->root = node;
   xml_parse(node, get_term());
-  xml_node_debug(xml->root, 0);
-  /* xml->show(xml); */
+  /* xml_node_debug(xml->root, 0); */
+  xml->show(xml);
 }
 
 int main(int argc, char **argv) {

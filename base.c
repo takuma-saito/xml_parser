@@ -1,5 +1,5 @@
 
-#include "basic.h"
+#include "base.h"
 
 /* エラーメッセージを出力して終了 */
 void err_exit(char *fmt, ...) {

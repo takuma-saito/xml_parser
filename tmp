@@ -1,4 +1,10 @@
 
+      /* for (prop_ptr = ptr->term->property->next; prop_ptr != NULL; prop_ptr = prop_ptr->next) { */
+      /*   printf("\033[36m[%d]:\033[0m", depth); */
+      /*   show_line(depth, line_num); */
+      /*   printf("      - [%s] %s\n", prop_ptr->key, prop_ptr->value); */
+      /* } */
+
   /* printf("ptr: %p\n", xml->root->children); */
   /* printf("next ptr: %p\n", xml->root->children->next); */
   /* printf("prev ptr: %p\n", xml->root->children->prev); */

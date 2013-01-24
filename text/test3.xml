@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE erlref SYSTEM "erlref.dtd">
 <xml>
-    <dore>
-        <erlang/>
-        <ptr/>
-    </dore>
     <a id="a_id" class="a_class">yes</a>
     <b>no</b>
     <c>

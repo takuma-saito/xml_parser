@@ -1,7 +1,7 @@
 #ifndef __TERM_H
 #define __TERM_H
 
-#include "basic.h"
+#include "base.h"
 
 /* タグの種類: 開始タグ, 終了タグ, エレメント（文字列）, コメント */
 typedef enum {
@@ -23,8 +23,8 @@ typedef struct prop {
 
 /* ノードの名前, 属性 */
 typedef struct {
-  char *name;
   type_t type;
+  char *name;
   prop_t *property;
 } term_t;
 

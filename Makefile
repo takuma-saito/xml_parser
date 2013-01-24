@@ -1,7 +1,7 @@
 # Makefile
 CC = gcc
 CFLAGS = -g -Wall
-OBJS = basic.o io.o dot.o term.o  xml-parser.o
+OBJS = base.o io.o dot.o term.o  xml-parser.o
 PROG = xp
 
 .SUFFIXES: .c .o

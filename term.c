@@ -1,12 +1,15 @@
 
 #include "term.h"
 #include "io.h"
+#include "base.h"
+
+#define COMMENT "comment"
 
 /* 次の要素 */
 term_t *term_next = NULL;
 
 /* プロパティを得る */
-static prop_t *get_property() {
+static prop_t *get_property(prop_t *curr_prop) {
   char key[MAXLINE] = "", value[MAXLINE] = "";
   char ch;
   prop_t *prop;
@@ -46,13 +49,13 @@ static prop_t *get_property() {
   }
   value[++pos] = '\0';
 
-  prop= malloc(sizeof(prop_t));
-  prop->key = malloc(sizeof(char) * (strlen(key) + 1));
-  prop->value = malloc(sizeof(char) * (strlen(value) + 1));
-  prop->next = NULL;
+  prop = (prop_t *)alloc(sizeof(prop_t));
+  prop->key = (char *)alloc(sizeof(char) * (strlen(key) + 1));
+  prop->value = (char *)alloc(sizeof(char) * (strlen(value) + 1));
+  prop->next = curr_prop;
   prop->prev = NULL;
-  strcpy(prop->key, key);
-  strcpy(prop->value, value);
+  strncpy(prop->key, key, strlen(key) + 1);
+  strncpy(prop->value, value, strlen(value) + 1);
   return prop;
 }
 
@@ -61,7 +64,6 @@ term_t *get_term(void) {
   term_t *term, *tmp;
   char ch;
   int counter = -1;
-  prop_t *prop = NULL;
 
   if (term_next != NULL) {
     tmp = term_next;
@@ -69,7 +71,7 @@ term_t *get_term(void) {
     return tmp;
   }
   
-  term = alloc(sizeof(term));
+  term = alloc(sizeof(term_t));
   ch = getch();
   /* 空白の読み捨て */
   while (isspace(ch)) {
@@ -77,19 +79,31 @@ term_t *get_term(void) {
   }
 
   if (ch == '<') {
-    if ((ch = getch()) == '/') {
+    ch = getch();
+    /* term end */
+    if (ch == '/') {
       term->type = TERM_END;
       ch = getch();
     }
+    /* comment */
+    /* else if (ch  == '!') { */
+    /*   if (expectch("--")) { */
+    /*     term->type = TERM_COMMENT; */
+    /*     term->name = str(COMMENT); */
+    /*     term = get_comment(); */
+    /*     while (true) { */
+    /*       ch = getch(); */
+    /*       if (expectch("-->")) break; */
+    /*     } */
+    /*     term->type = TERM_COMMENT; */
+    /*   } */
+    /* } */
+    /* term start */
     else {
       term->type = TERM_START;
     }
     while (true) {
-      if (ch == '>') {
-        for (prop = term->property; prop != NULL; prop = prop->prev);
-        term->property = prop;
-        break;
-      }
+      if (ch == '>') break;
       if (ch == '/') {
         term->type = TERM_ELEMENT;
         getch(); //読み捨て
@@ -98,9 +112,7 @@ term_t *get_term(void) {
       
       /* 属性を入力 */
       if (ch == ' ') {
-        term->property = get_property();
-        term->property->prev = term->property;
-        term->property = term->property->next;
+        term->property = get_property(term->property);
       }
       
       if (MAXNAME > ++counter) {
@@ -112,8 +124,8 @@ term_t *get_term(void) {
       ch = getch();
     }
     line[++counter] = '\0';
-    term->name = malloc(sizeof(char) * (strlen(line) + 1));
-    strcpy(term->name, line);
+    term->name = (char *)alloc(sizeof(char) * (strlen(line) + 1));
+    strncpy(term->name, line, strlen(line) + 1);
   }
   else if (ch == EOF) {
     term->type = TERM_EOF;
@@ -134,8 +146,8 @@ term_t *get_term(void) {
       ch = getch();
     }
     line[++counter] = '\0';
-    term->name = malloc(sizeof(char) * (strlen(line) + 1));
-    strcpy(term->name, line);
+    term->name = (char *)alloc(sizeof(char) * (strlen(line) + 1));
+    strncpy(term->name, line, strlen(line) + 1);
   }
   else {
     /* ありえないことが起こった */
