@@ -1,0 +1,35 @@
+digraph sample {
+	edge [color = "#993333", arrowtail = odot];
+	"application " -> "description";
+	"application " -> "xi:include ";
+	"application " -> "xi:include ";
+	"application " -> "xi:include ";
+	"application " -> "xi:include ";
+	"application " -> "xi:include ";
+	"application " -> "xi:include ";
+	"application " -> "xi:include ";
+	"header" -> "copyright";
+	"header" -> "legalnotice";
+	"header" -> "title";
+	"header" -> "prepared";
+	"header" -> "docno";
+	"header" -> "date";
+	"header" -> "rev";
+	"header" -> "file";
+	"description" -> "p";
+	"copyright" -> "year";
+	"copyright" -> "year";
+	"copyright" -> "holder";
+	"title" -> "xmerl Reference Manual";
+	"prepared" -> "OTP Team";
+	"date" -> "2004-06-02";
+	"rev" -> "1.0";
+	"file" -> "ref_man.xml";
+	"p" -> "The ";
+	"p" -> "em";
+	"p" -> "application contains modules with support for processing of xml files compliant to XML 1.0.";
+	"year" -> "2004";
+	"year" -> "2009";
+	"holder" -> "Ericsson AB. All Rights Reserved.";
+	"em" -> "xmerl";
+}

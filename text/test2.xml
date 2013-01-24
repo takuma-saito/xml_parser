@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE erlref SYSTEM "erlref.dtd">
+<xml>
+    <a id="a_id" class="a_class">hoge</a>
+    <c>
+        <start>key</start>
+        <end>value</end>
+    </c>
+    <d>
+      <hoge>hoge desu</hoge>
+      <fuga>
+        <teketeke>fuwafuwa</teketeke>
+      </fuga>
+    </d>
+</xml>

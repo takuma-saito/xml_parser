@@ -1,0 +1,16 @@
+digraph sample {
+	edge [color = "#993333", arrowtail = odot];
+	"fault" -> "value";
+	"value" -> "struct";
+	"struct" -> "member";
+	"struct" -> "member";
+	"member" -> "name";
+	"member" -> "value";
+	"member" -> "name";
+	"member" -> "value";
+	"name" -> "faultCode";
+	"value" -> "int";
+	"name" -> "faultString";
+	"value" -> "an error message";
+	"int" -> "4";
+}

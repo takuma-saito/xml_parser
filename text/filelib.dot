@@ -1,0 +1,418 @@
+digraph sample {
+	edge [color = "#993333", arrowtail = odot];
+	"erlref" -> "module";
+	"erlref" -> "modulesummary";
+	"erlref" -> "description";
+	"erlref" -> "section";
+	"erlref" -> "funcs";
+	"header" -> "copyright";
+	"header" -> "legalnotice";
+	"header" -> "title";
+	"header" -> "prepared";
+	"header" -> "responsible";
+	"header" -> "docno";
+	"header" -> "approved";
+	"header" -> "checked";
+	"header" -> "date";
+	"header" -> "rev";
+	"header" -> "file";
+	"module" -> "filelib";
+	"modulesummary" -> "File utilities, such as wildcard matching of filenames";
+	"description" -> "p";
+	"description" -> "p";
+	"description" -> "p";
+	"description" -> "p";
+	"section" -> "title";
+	"section" -> "code ";
+	"funcs" -> "func";
+	"funcs" -> "func";
+	"funcs" -> "func";
+	"funcs" -> "func";
+	"funcs" -> "func";
+	"funcs" -> "func";
+	"funcs" -> "func";
+	"funcs" -> "func";
+	"funcs" -> "func";
+	"copyright" -> "year";
+	"copyright" -> "year";
+	"copyright" -> "holder";
+	"legalnotice" -> "The contents of this file are subject to the Erlang Public License,
+      Version 1.1, (the "License"); you may not use this file except in
+      compliance with the License. You should have received a copy of the
+      Erlang Public License along with this software. If not, it can be
+      retrieved online at http://www.erlang.org/.
+    
+      Software distributed under the License is distributed on an "AS IS"
+      basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+      the License for the specific language governing rights and limitations
+      under the License.
+    
+    ";
+	"title" -> "filelib";
+	"prepared" -> "Bjorn Gustavsson";
+	"responsible" -> "Bjorn Gustavsson";
+	"docno" -> "1";
+	"approved" -> "Kenneth Lundin";
+	"date" -> "03-01-21";
+	"rev" -> "A";
+	"file" -> "filelib.sgml";
+	"p" -> "This module contains utilities on a higher level than the ";
+	"p" -> "c";
+	"p" -> "module.";
+	"p" -> "The module supports Unicode file names, so that it will match against regular expressions given in Unicode and that it will find and process raw file names (i.e. files named in a way that does not confirm to the expected encoding).";
+	"p" -> "If the VM operates in Unicode file naming mode on a machine with transparent file naming, the ";
+	"p" -> "c";
+	"p" -> "provided to ";
+	"p" -> "c";
+	"p" -> "needs to be prepared to handle binary file names.";
+	"p" -> "For more information about raw file names, see the ";
+	"p" -> "seealso ";
+	"p" -> "module.";
+	"title" -> "DATA TYPES";
+	"code " -> "filename() =  = string() | atom() | DeepList | RawFilename
+  DeepList = [char() | atom() | DeepList]
+  RawFilename = binary()
+  If VM is in unicode filename mode, string() and char() are allowed to be > 255.
+  RawFilename is a filename not subject to Unicode translation, meaning that it 
+  can contain characters not conforming to the Unicode encoding expected from the 
+  filesystem (i.e. non-UTF-8 characters although the VM is started in Unicode 
+  filename mode).
+dirname() = filename()";
+	"func" -> "name";
+	"func" -> "fsummary";
+	"func" -> "type";
+	"func" -> "desc";
+	"func" -> "name";
+	"func" -> "fsummary";
+	"func" -> "desc";
+	"func" -> "name";
+	"func" -> "fsummary";
+	"func" -> "type";
+	"func" -> "desc";
+	"func" -> "name";
+	"func" -> "fsummary";
+	"func" -> "type";
+	"func" -> "desc";
+	"func" -> "name";
+	"func" -> "fsummary";
+	"func" -> "type";
+	"func" -> "desc";
+	"func" -> "name";
+	"func" -> "fsummary";
+	"func" -> "type";
+	"func" -> "desc";
+	"func" -> "name";
+	"func" -> "fsummary";
+	"func" -> "type";
+	"func" -> "desc";
+	"func" -> "name";
+	"func" -> "fsummary";
+	"func" -> "type";
+	"func" -> "desc";
+	"func" -> "name";
+	"func" -> "fsummary";
+	"func" -> "type";
+	"func" -> "desc";
+	"year" -> "2003";
+	"year" -> "2010";
+	"holder" -> "Ericsson AB. All Rights Reserved.";
+	"c" -> "file";
+	"c" -> "fun()";
+	"c" -> "fold_files/5";
+	"seealso " -> "file";
+	"name" -> "ensure_dir(Name) -> ok | {error, Reason}";
+	"fsummary" -> "Ensure that all parent directories for a file or directory exist.";
+	"type" -> "v";
+	"type" -> "v";
+	"desc" -> "p";
+	"desc" -> "p";
+	"name" -> "file_size(Filename) -> integer()";
+	"fsummary" -> "Return the size in bytes of the file.";
+	"desc" -> "p";
+	"name" -> "fold_files(Dir, RegExp, Recursive, Fun, AccIn) -> AccOut   ";
+	"fsummary" -> "Fold over all files matching a regular expression.";
+	"type" -> "v";
+	"type" -> "v";
+	"type" -> "v";
+	"type" -> "v";
+	"type" -> "v";
+	"desc" -> "p";
+	"desc" -> "p";
+	"desc" -> "p";
+	"name" -> "is_dir(Name) -> true | false";
+	"fsummary" -> "Test whether Name refer to a directory or not";
+	"type" -> "v";
+	"desc" -> "p";
+	"name" -> "is_file(Name) -> true | false";
+	"fsummary" -> "Test whether Name refer to a file or directory.";
+	"type" -> "v";
+	"desc" -> "p";
+	"name" -> "is_regular(Name) -> true | false";
+	"fsummary" -> "Test whether Name refer to a (regular) file.";
+	"type" -> "v";
+	"desc" -> "p";
+	"name" -> "last_modified(Name) -> {{Year,Month,Day},{Hour,Min,Sec}} | 0";
+	"fsummary" -> "Return the local date and time when a file was last modified.";
+	"type" -> "v";
+	"desc" -> "p";
+	"name" -> "wildcard(Wildcard) -> list()";
+	"fsummary" -> "Match filenames using Unix-style wildcards.";
+	"type" -> "v";
+	"desc" -> "p";
+	"desc" -> "p";
+	"desc" -> "taglist";
+	"desc" -> "p";
+	"desc" -> "p";
+	"desc" -> "p";
+	"desc" -> "p";
+	"desc" -> "p";
+	"desc" -> "code ";
+	"desc" -> "p";
+	"desc" -> "code ";
+	"desc" -> "p";
+	"desc" -> "code ";
+	"desc" -> "p";
+	"desc" -> "p";
+	"desc" -> "code ";
+	"desc" -> "p";
+	"desc" -> "code ";
+	"name" -> "wildcard(Wildcard, Cwd) -> list()";
+	"fsummary" -> "Match filenames using Unix-style wildcards starting at a specified directory.";
+	"type" -> "v";
+	"type" -> "v";
+	"desc" -> "p";
+	"v" -> "Name = filename() | dirname()";
+	"v" -> "Reason = posix() -- see file(3)";
+	"p" -> "The ";
+	"p" -> "c";
+	"p" -> "function ensures that all parent
+          directories for the given file or directory name ";
+	"p" -> "c";
+	"p" -> "exist, trying to create them if necessary.";
+	"p" -> "Returns ";
+	"p" -> "c";
+	"p" -> "if all parent directories already exist
+          or could be created, or ";
+	"p" -> "c";
+	"p" -> "if some parent
+          directory does not exist and could not be created for some
+          reason.";
+	"p" -> "The ";
+	"p" -> "c";
+	"p" -> "function returns the size of the given file.";
+	"v" -> "Dir = dirname()";
+	"v" -> "RegExp = regular_expression_string()";
+	"v" -> "Recursive = true|false";
+	"v" -> "Fun = fun(F, AccIn) -> AccOut";
+	"v" -> "AccIn = AccOut = term()";
+	"p" -> "The ";
+	"p" -> "c";
+	"p" -> "function folds the function
+          ";
+	"p" -> "c";
+	"p" -> "over all (regular) files ";
+	"p" -> "c";
+	"p" -> "in the
+          directory ";
+	"p" -> "c";
+	"p" -> "that match the regular expression ";
+	"p" -> "c";
+	"p" -> "(see the ";
+	"p" -> "seealso ";
+	"p" -> "module for a description
+	  of the allowed regular expressions).
+          If ";
+	"p" -> "c";
+	"p" -> "is true all sub-directories to ";
+	"p" -> "c";
+	"p" -> "are processed. The regular expression matching is done on just
+	  the filename without the directory part.";
+	"p" -> "If Unicode file name translation is in effect and the file
+	  system is completely transparent, file names that cannot be
+	  interpreted as Unicode may be encountered, in which case the
+	  ";
+	"p" -> "c";
+	"p" -> "must be prepared to handle raw file names
+	  (i.e. binaries). If the regular expression contains
+	  codepoints beyond 255, it will not match file names that does
+	  not conform to the expected character encoding (i.e. are not
+	  encoded in valid UTF-8).";
+	"p" -> "For more information about raw file names, see the 
+          ";
+	"p" -> "seealso ";
+	"p" -> "module.";
+	"v" -> "Name = filename() | dirname()";
+	"p" -> "The ";
+	"p" -> "c";
+	"p" -> "function returns ";
+	"p" -> "c";
+	"p" -> "if ";
+	"p" -> "c";
+	"p" -> "refers to a directory, and ";
+	"p" -> "c";
+	"p" -> "otherwise.";
+	"v" -> "Name = filename() | dirname()";
+	"p" -> "The ";
+	"p" -> "c";
+	"p" -> "function returns ";
+	"p" -> "c";
+	"p" -> "if ";
+	"p" -> "c";
+	"p" -> "refers to a file or a directory, and ";
+	"p" -> "c";
+	"p" -> "otherwise.";
+	"v" -> "Name = filename()";
+	"p" -> "The ";
+	"p" -> "c";
+	"p" -> "function returns ";
+	"p" -> "c";
+	"p" -> "if ";
+	"p" -> "c";
+	"p" -> "refers to a file (regular file), and ";
+	"p" -> "c";
+	"p" -> "otherwise.";
+	"v" -> "Name = filename() | dirname()";
+	"p" -> "The ";
+	"p" -> "c";
+	"p" -> "function returns the date and time the
+          given file or directory was last modified, or 0 if the file
+	  does not exist.";
+	"v" -> "Wildcard = filename() | dirname()";
+	"p" -> "The ";
+	"p" -> "c";
+	"p" -> "function returns a list of all files
+          that match Unix-style wildcard-string ";
+	"p" -> "c";
+	"p" -> ".";
+	"p" -> "The wildcard string looks like an ordinary filename, except
+          that certain "wildcard characters" are interpreted in a special
+          way. The following characters are special:
+          ";
+	"taglist" -> "tag";
+	"taglist" -> "item";
+	"taglist" -> "tag";
+	"taglist" -> "item";
+	"taglist" -> "tag";
+	"taglist" -> "item";
+	"taglist" -> "tag";
+	"taglist" -> "item";
+	"p" -> "Other characters represent themselves. Only filenames that
+          have exactly the same character in the same position will match.
+          (Matching is case-sensitive; i.e. "a" will not match "A").
+          ";
+	"p" -> "Note that multiple "*" characters are allowed
+          (as in Unix wildcards, but opposed to Windows/DOS wildcards).
+          ";
+	"p" -> "Examples:";
+	"p" -> "The following examples assume that the current directory is the
+          top of an Erlang/OTP installation.
+          ";
+	"p" -> "To find all ";
+	"p" -> "c";
+	"p" -> "files in all applications, the following
+          line can be used:";
+	"code " -> "filelib:wildcard("lib/*/ebin/*.beam").        ";
+	"p" -> "To find either ";
+	"p" -> "c";
+	"p" -> "or ";
+	"p" -> "c";
+	"p" -> "in all applications
+          ";
+	"p" -> "c";
+	"p" -> "directories, the following";
+	"code " -> "filelib:wildcard("lib/*/src/*.?rl")        ";
+	"p" -> "or the following line";
+	"code " -> "filelib:wildcard("lib/*/src/*.{erl,hrl}")        ";
+	"p" -> "can be used.";
+	"p" -> "To find all ";
+	"p" -> "c";
+	"p" -> "files in either ";
+	"p" -> "c";
+	"p" -> "or ";
+	"p" -> "c";
+	"p" -> "directories, use:";
+	"code " -> "filelib:wildcard("lib/*/{src,include}/*.hrl").        ";
+	"p" -> "To find all ";
+	"p" -> "c";
+	"p" -> "or ";
+	"p" -> "c";
+	"p" -> "files in either
+          ";
+	"p" -> "c";
+	"p" -> "or ";
+	"p" -> "c";
+	"p" -> "directories, use:";
+	"code " -> "filelib:wildcard("lib/*/{src,include}/*.{erl,hrl}")        ";
+	"v" -> "Wildcard = filename() | dirname()";
+	"v" -> "Cwd = dirname()";
+	"p" -> "The ";
+	"p" -> "c";
+	"p" -> "function works like ";
+	"p" -> "c";
+	"p" -> ",
+          except that instead of the actual working directory, ";
+	"p" -> "c";
+	"p" -> "will be used.";
+	"c" -> "ensure_dir/1";
+	"c" -> "Name";
+	"c" -> "ok";
+	"c" -> "{error, Reason}";
+	"c" -> "file_size";
+	"c" -> "fold_files/5";
+	"c" -> "Fun";
+	"c" -> "F";
+	"c" -> "Dir";
+	"c" -> "RegExp";
+	"seealso " -> "re";
+	"c" -> "Recursive";
+	"c" -> "Dir";
+	"c" -> "fun()";
+	"seealso " -> "file";
+	"c" -> "is_dir/1";
+	"c" -> "true";
+	"c" -> "Name";
+	"c" -> "false";
+	"c" -> "is_file/1";
+	"c" -> "true";
+	"c" -> "Name";
+	"c" -> "false";
+	"c" -> "is_regular/1";
+	"c" -> "true";
+	"c" -> "Name";
+	"c" -> "false";
+	"c" -> "last_modified/1";
+	"c" -> "wildcard/1";
+	"c" -> "Wildcard";
+	"tag" -> "?";
+	"item" -> "p";
+	"tag" -> "*";
+	"item" -> "p";
+	"tag" -> "[Character1,Character2,...]";
+	"item" -> "p";
+	"tag" -> "{Item,...}";
+	"item" -> "p";
+	"c" -> ".beam";
+	"c" -> ".erl";
+	"c" -> ".hrl";
+	"c" -> "src";
+	"c" -> ".hrl";
+	"c" -> "src";
+	"c" -> "include";
+	"c" -> ".erl";
+	"c" -> ".hrl";
+	"c" -> "src";
+	"c" -> "include";
+	"c" -> "wildcard/2";
+	"c" -> "wildcard/1";
+	"c" -> "Cwd";
+	"p" -> "Matches one character.";
+	"p" -> "Matches any number of characters up to the end of
+              the filename, the next dot, or the next slash.";
+	"p" -> "Matches any of the characters listed. Two characters
+	    separated by a hyphen will match a range of characters.
+	    Example: ";
+	"p" -> "c";
+	"p" -> "will match any uppercase letter.";
+	"p" -> "Alternation. Matches one of the alternatives.";
+	"c" -> "[A-Z]";
+Ðw}

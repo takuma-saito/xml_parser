@@ -1,0 +1,60 @@
+
+  /* printf("ptr: %p\n", xml->root->children); */
+  /* printf("next ptr: %p\n", xml->root->children->next); */
+  /* printf("prev ptr: %p\n", xml->root->children->prev); */
+  /* printf("name: %s\n", xml->root->children->term->name); */
+  while (true) {
+    curr_term = term_get();
+    printf("%s\n", curr_term->name);
+    /* printf("\n"); */
+    /* printf("[node]: %p\n", node); */
+    /* printf("[parent]: %p\n", node->parent); */
+    /* printf("[children]: %p\n", node->children); */
+    /* fflush(stdout); */
+    switch (curr_term->type) {
+      
+    case TERM_START:  
+      curr_node->term = curr_term;
+      switch(term_next_type()) {
+      case TERM_START:
+        curr_node = new_children_node(curr_node);
+        break;
+      case TERM_END:
+        term_get();             /* skip */
+        break;
+      case TERM_CONTENT:
+        curr_node->children = new_children_node(curr_node);
+        curr_node->children->term = term_get();
+        curr_node = new_next_node(curr_node);
+        break;
+      default:
+        break;
+      }      
+      break;
+      
+    case TERM_END:
+      switch(term_next_type()) {
+      case TERM_START:
+        curr_node->term = term_get();
+        curr_node = new_next_node(curr_node);
+        break;
+      case TERM_END:
+        term_get();             /* skip */
+        curr_node = curr_node->parent;
+        break;
+      default:
+        break;
+      }
+      break;
+      
+    case TERM_ELEMENT:
+      curr_node->term = term_get();
+      curr_node = new_next_node(curr_node);
+      
+    case TERM_EOF:
+      return;
+      
+    default:
+      break;
+    }
+  }
