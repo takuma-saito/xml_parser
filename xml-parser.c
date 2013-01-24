@@ -58,6 +58,7 @@ void xml_parse(node_t *node, term_t *curr_term) {
   case TERM_START:
     node->term = curr_term;
     node->children = new_children_node(node);
+    node = node->children;
     xml_parse(node, get_term());
     break;
   case TERM_END:
