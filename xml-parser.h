@@ -1,7 +1,7 @@
 #ifndef __XML_PARSER_H
 #define __XML_PARSER_H
 
-#include "term.h"
+#include "token.h"
 
 /* xmlの解析木を構成する */
 typedef struct node {
@@ -16,7 +16,7 @@ typedef struct node {
 typedef struct xml {
   node_t *root;
   char *filename;
-  TInfo info;
+  TInfo_t *info;
   void (*show)(struct xml *root);
 } xml_t;
 

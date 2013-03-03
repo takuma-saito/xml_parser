@@ -24,17 +24,18 @@ typedef struct prop {
 
 /* ノードの名前, 属性 */
 typedef struct {
+  type_t type;
   char *name;
   prop_t *property;
-} TAttr;
-
-/* コメント */
-typedef char* TComment;
-
-typedef struct {
-  type_t type;
-  void *value;                  /* TAttr or TComment */
 } token_t;
+
+/* コメント */ 
+/* typedef char* TComment; */
+
+/* typedef struct { */
+/*   type_t type; */
+/*   void *value;                  /\* TAttr or TComment *\/ */
+/* } token_t; */
 
 /* 全体の情報 */
 typedef struct {

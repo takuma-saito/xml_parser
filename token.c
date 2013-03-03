@@ -1,19 +1,18 @@
 
-#include "term.h"
+#include "token.h"
 #include "io.h"
 #include "base.h"
 
 #define COMMENT "comment"
 
 /* 次の要素 */
-term_t *term_next = NULL;
+token_t *token_next = NULL;
 
 /* XML の version とエンコーディングを読み込む */
-void set_encoding(int *version, char **encoding) {
+void set_encoding(double *version, char **encoding) {
   char line[MAXLINE];
   char text[MAXLINE];
   int ret, pos = -1;
-  double version;
   char ch = getch();
   
   /* 空白を飛ばす */
@@ -52,7 +51,7 @@ void set_encoding(int *version, char **encoding) {
 }
 
 /* doctype宣言の読込 */
-char *get_doctype() {
+int set_doctype(char **doctype) {
   char ch = getch();
   char line[MAXLINE] = "";
   int pos = -1;
@@ -67,7 +66,7 @@ char *get_doctype() {
     if ((ch = getch()) != '!') {
       pushch(ch);
       pushch('<');
-      return;
+      return -1;
     }
     else {
     }
@@ -97,14 +96,15 @@ char *get_doctype() {
     }
   }
   line[++pos] = '\0';
-  return str(line);
+  *doctype = str(line);
+  return 0;
 }
 
 TInfo_t *get_info() {
   TInfo_t *info;
-  info = (TInfo_t *)alloc(TInfo_t);
-  set_encoding(&info->encoding, &info->version);
-  info->doctype = get_doctype();
+  info = (TInfo_t *)alloc(sizeof(TInfo_t));
+  set_encoding(&info->version, &info->encoding);
+  set_doctype(&info->doctype);
   return info;
 }
 
@@ -130,7 +130,7 @@ static prop_t *get_property(prop_t *curr_prop) {
   }
   key[++pos] = '\0';
   pos = -1;
-
+  
   /* valueを得る */
   if ((ch = getch()) != '"') {
     err_exit("'\"'がありません. トークンエラー.\n");
@@ -148,10 +148,10 @@ static prop_t *get_property(prop_t *curr_prop) {
     }
   }
   value[++pos] = '\0';
-
+  
   prop = (prop_t *)alloc(sizeof(prop_t));
-  prop->key = str(key)
-  prop->value = str(value)
+  prop->key = str(key);
+  prop->value = str(value);
   prop->next = curr_prop;
   prop->prev = NULL;
   return prop;
@@ -159,17 +159,18 @@ static prop_t *get_property(prop_t *curr_prop) {
 
 token_t *get_token() {
   char line[MAXNAME] = "";
-  TAttr *attr, *tmp;
+  token_t *token, *tmp;
   char ch;
   int counter = -1;
 
-  if (attr_next != NULL) {
-    tmp = attr_next;
-    attr_next = NULL;
+  /* キャッシュ */
+  if (token_next != NULL) {
+    tmp = token_next;
+    token_next = NULL;
     return tmp;
   }
   
-  attr = alloc(sizeof(attr_t));
+  token = alloc(sizeof(token_t));
   ch = getch();
   /* 空白の読み捨て */
   while (isspace(ch)) {
@@ -178,39 +179,39 @@ token_t *get_token() {
 
   if (ch == '<') {
     ch = getch();
-    /* attr end */
+    /* token end */
     if (ch == '/') {
-      attr->type = TOKEN_END;
+      token->type = TOKEN_END;
       ch = getch();
     }
     /* comment */
-    else if (ch  == '!') {
-      if (expectch("--")) {
-        token->type = TOKEN_COMMENT;
-        attr->name = str(COMMENT);
-        attr = get_comment();
-        while (true) {
-          ch = getch();
-          if (expectch("-->")) break;
-        }
-        token->type = TOKEN_COMMENT;
-      }
-    }
-    /* attr start */
+    /* else if (ch  == '!') { */
+    /*   if (expectch("--")) { */
+    /*     token->type = TOKEN_COMMENT; */
+    /*     token->name = str(COMMENT); */
+    /*     token = get_comment(); */
+    /*     while (true) { */
+    /*       ch = getch(); */
+    /*       if (expectch("-->")) break; */
+    /*     } */
+    /*     token->type = TOKEN_COMMENT; */
+    /*   } */
+    /* } */
+    /* token start */
     else {
       token->type = TOKEN_START;
     }
     while (true) {
       if (ch == '>') break;
       if (ch == '/') {
-        attr->type = TOKEN_ELEMENT;
+        token->type = TOKEN_ELEMENT;
         getch(); //読み捨て
         break;
       }
       
       /* 属性を入力 */
       if (ch == ' ') {
-        attr->property = get_property(attr->property);
+        token->property = get_property(token->property);
       }
       
       if (MAXNAME > ++counter) {
@@ -222,14 +223,14 @@ token_t *get_token() {
       ch = getch();
     }
     line[++counter] = '\0';
-    attr->name = (char *)alloc(sizeof(char) * (strlen(line) + 1));
-    strncpy(attr->name, line, strlen(line) + 1);
+    token->name = (char *)alloc(sizeof(char) * (strlen(line) + 1));
+    strncpy(token->name, line, strlen(line) + 1);
   }
   else if (ch == EOF) {
-    attr->type = TOKEN_EOF;
+    token->type = TOKEN_EOF;
   }
   else if (isprint(ch)) {
-    attr->type = TOKEN_CONTENT;
+    token->type = TOKEN_CONTENT;
     while (1) {      
       if (ch == '<') {
         pushch(ch);
@@ -244,27 +245,27 @@ token_t *get_token() {
       ch = getch();
     }
     line[++counter] = '\0';
-    attr->name = (char *)alloc(sizeof(char) * (strlen(line) + 1));
-    strncpy(attr->name, line, strlen(line) + 1);
+    token->name = (char *)alloc(sizeof(char) * (strlen(line) + 1));
+    strncpy(token->name, line, strlen(line) + 1);
   }
   else {
     /* ありえないことが起こった */
     err_exit("英数字以外の文字は読み込めません.\n");
   }
-  return attr;
+  return token;
 }
 
 /* 次の単語のタイプを予測する */
-bool expect_term(type_t type) {
-  if (term_next == NULL) {
-    term_next = get_term();
+bool expect_token(type_t type) {
+  if (token_next == NULL) {
+    token_next = get_token();
   }
-  return term_next->type == type;
+  return token_next->type == type;
 }
 
-type_t next_term_type() {
-  if (term_next == NULL) {
-    term_next = get_term();
+type_t next_token_type() {
+  if (token_next == NULL) {
+    token_next = get_token();
   }
-  return term_next->type;
+  return token_next->type;
 }

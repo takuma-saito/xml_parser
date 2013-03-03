@@ -58,7 +58,7 @@ static void add_list(node_t *ptr) {
   char line[MAXLINE] = "";
   curr_dot_list->next = malloc(sizeof(dot_list_t));
   snprintf(line, MAXLINE, "\t\"%s\" -> \"%s\";\n",
-           ptr->parent->term->name, ptr->term->name);
+           ptr->parent->token->name, ptr->token->name);
   curr_dot_list->line = malloc(sizeof(char) * (strlen(line) + 1));
   strcpy(curr_dot_list->line, line);
   curr_dot_list = curr_dot_list->next;
@@ -73,18 +73,20 @@ static void dot_create_list() {
     if (node == NULL) break;
     if (node->children != NULL) depth++;
     for (ptr = node->children; ptr != NULL; ptr = ptr->next) {
-      switch (node->term->type) {
-      case TERM_CONTENT:
+      switch (node->token->type) {
+      case TOKEN_CONTENT:
         add_list(ptr);
         break;
-      case TERM_ELEMENT:
-      case TERM_START:
+      case TOKEN_ELEMENT:
+      case TOKEN_START:
         add_list(ptr);
         enqueue(ptr);
         break;
-      case TERM_END:
-      case TERM_COMMENT:
-      case TERM_EOF:
+      case TOKEN_END:
+      case TOKEN_COMMENT:
+      case TOKEN_EOF:
+        break;
+      default:
         break;
       }
     }

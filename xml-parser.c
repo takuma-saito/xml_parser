@@ -5,7 +5,7 @@
  **********************************************/
 
 #include "xml-parser.h"
-#include "term.h"
+#include "token.h"
 #include "io.h"
 
 #define GREEN "\033[32m"
@@ -20,23 +20,23 @@ void usage(void) {
 }
 
 /* ノードを next 方向に進める */
-node_t *new_next_node(node_t *node, term_t *term) {
+node_t *new_next_node(node_t *node, token_t *token) {
   node_t *new;
   new = alloc(sizeof(node_t));
   new->prev = node;
   new->parent = node->parent;
-  new->term = term;
+  new->token = token;
   node->next = new;
   return new;
 }
 
 /* ノードを prev 方向に進める */
-node_t *new_prev_node(node_t *node, term_t *term) {
+node_t *new_prev_node(node_t *node, token_t *token) {
   node_t *new;
   new = alloc(sizeof(node_t));
   new->next = node;
   new->parent = node->parent;
-  new->term = term;
+  new->token = token;
   node->prev = new;
   return new;
 }
@@ -51,50 +51,50 @@ node_t *new_children_node(node_t *node) {
 }
 
 /* 解析処理 */
-/* node->term: 空 */
-void xml_parse(node_t *node, term_t *curr_term) {
-  term_t *next_term;
-  /* printf("node->term->name: %s\n", node->term->name); */
-  /* printf("node->term->type: %d\n", node->term->type); */
+/* node->token: 空 */
+void xml_parse(node_t *node, token_t *curr_token) {
+  token_t *next_token;
+  /* printf("node->token->name: %s\n", node->token->name); */
+  /* printf("node->token->type: %d\n", node->token->type); */
   /* puts(""); */
   /* fflush(stdout); */
-  switch(curr_term->type) {
-  case TERM_START:
-    next_term = get_term();
-    node->term = curr_term;
+  switch(curr_token->type) {
+  case TOKEN_START:
+    next_token = get_token();
+    node->token = curr_token;
     node->children = new_children_node(node);
     node = node->children;
-    xml_parse(node, next_term);
+    xml_parse(node, next_token);
     break;
-  case TERM_END:
-    next_term = get_term(); 
-    switch (next_term->type) {
-    case TERM_END:
+  case TOKEN_END:
+    next_token = get_token(); 
+    switch (next_token->type) {
+    case TOKEN_END:
       node = node->parent;
       break;
-    case TERM_START:      
-      node = new_next_node(node, next_term);
+    case TOKEN_START:      
+      node = new_next_node(node, next_token);
       break;
-    case TERM_EOF:
+    case TOKEN_EOF:
       return;
     default:
       break;
     }
-    xml_parse(node, next_term);
+    xml_parse(node, next_token);
     break;
-  case TERM_CONTENT:
-    node->term = curr_term;
+  case TOKEN_CONTENT:
+    node->token = curr_token;
     node = node->parent;
-    xml_parse(node, get_term());
+    xml_parse(node, get_token());
     break;
-  case TERM_ELEMENT:
-    if (node->term == NULL) {
-      node->term = curr_term;
+  case TOKEN_ELEMENT:
+    if (node->token == NULL) {
+      node->token = curr_token;
     }
     else {
-      node = new_next_node(node, curr_term);
+      node = new_next_node(node, curr_token);
     }
-    xml_parse(node, get_term());
+    xml_parse(node, get_token());
     break;
   default:
     break;
@@ -106,21 +106,21 @@ void xml_node_debug(node_t *node, int depth) {
   node_t *ptr;
   prop_t *prop;
   for (ptr = node; ptr != NULL; ptr = ptr->next) {
-    switch(ptr->term->type) {
-    case TERM_ELEMENT:
-    case TERM_CONTENT:
-      printf("[content] %d -> '%s'\n", depth, ptr->term->name);
+    switch(ptr->token->type) {
+    case TOKEN_ELEMENT:
+    case TOKEN_CONTENT:
+      printf("[content] %d -> '%s'\n", depth, ptr->token->name);
       break;
-    case TERM_START:
-      printf("[node:%d] %d -> %s\n", ptr->term->type, depth, ptr->term->name);
-      for (prop = ptr->term->property; prop != NULL; prop = prop->next) {
+    case TOKEN_START:
+      printf("[node:%d] %d -> %s\n", ptr->token->type, depth, ptr->token->name);
+      for (prop = ptr->token->property; prop != NULL; prop = prop->next) {
         printf("[prop]      - [%s] %s\n", prop->key, prop->value);
       } 
       xml_node_debug(ptr->children, depth + 1);
       break;
     default:
-      printf("[debug]: term->name -> %s\n", ptr->term->name);
-      printf("[debug]: term->type -> %d\n", ptr->term->type);
+      printf("[debug]: token->name -> %s\n", ptr->token->name);
+      printf("[debug]: token->type -> %d\n", ptr->token->type);
       /* assert(false); */
       break;
     }
@@ -150,28 +150,28 @@ void xml_node_show(node_t *node, int depth, bool *line_num) {
   node_t *ptr;
   prop_t *prop;
   for (ptr = node; ptr != NULL; ptr = ptr->next) {
-    switch(ptr->term->type) {
-    case TERM_ELEMENT:
-    case TERM_CONTENT:          /* 終端 */
+    switch(ptr->token->type) {
+    case TOKEN_ELEMENT:
+    case TOKEN_CONTENT:          /* 終端 */
       PRINT("  |\n");
-      PRINT("   -- %s%s%s\n", GREEN, ptr->term->name, C_END);
+      PRINT("   -- %s%s%s\n", GREEN, ptr->token->name, C_END);
       break;
-    case TERM_START:              /* 節 */
+    case TOKEN_START:              /* 節 */
       PRINT("  |\n");
-      PRINT("   -- %s\n", ptr->term->name);
-      for (prop = ptr->term->property; prop != NULL; prop = prop->next) {
+      PRINT("   -- %s\n", ptr->token->name);
+      for (prop = ptr->token->property; prop != NULL; prop = prop->next) {
         PRINT("      - [%s] %s\n", prop->key, prop->value);
       } 
       /* 隣の要素がなければ, ラインを引かない */
       line_num[depth] = (ptr->next != NULL) ? true : false;
       xml_node_show(ptr->children, depth + 1, line_num);
       break;
-    case TERM_EOF:
-    case TERM_COMMENT:
+    case TOKEN_EOF:
+    case TOKEN_COMMENT:
       break;
     default:
       /* ありえないことが起こった */
-      printf("%d\n", ptr->term->type);
+      printf("%d\n", ptr->token->type);
       err_exit("unkown error\n");
       break;
     }
@@ -205,12 +205,13 @@ static bool *alloc_line(node_t *root) {
 /* xml木構造を表示 */
 void show_format_line(xml_t *xml) {
   bool *line_num;
+  TInfo_t *info = xml->info;
   line_num = alloc_line(xml->root);
   printf("Show xml tree ... %s\n", xml->filename);
-  if (xml->encoding != NULL)
-    printf("Version ... %2.1lf  Encoding ... %s\n", xml->version, xml->encoding);
-  if (xml->doctype != NULL)
-    printf("Doctype ... %s\n", xml->doctype);  
+  if (info->encoding != NULL)
+    printf("Version ... %2.1lf  Encoding ... %s\n", info->version, info->encoding);
+  if (info->doctype != NULL)
+    printf("Doctype ... %s\n", info->doctype);
   xml_node_show(xml->root, 0, line_num);
   printf("\n");
 }
@@ -218,11 +219,10 @@ void show_format_line(xml_t *xml) {
 /* 本処理 */
 void xml_main(xml_t *xml) {
   node_t *node;
-  xml_version(xml);
-  xml_doctype(xml);  
   node = alloc(sizeof(node_t));
+  xml->info = get_info();
   xml->root = node;
-  xml_parse(node, get_term());
+  xml_parse(node, get_token());
   /* xml_node_debug(xml->root, 0); */
   xml->show(xml);
 }
