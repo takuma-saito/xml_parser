@@ -9,16 +9,14 @@ typedef struct node {
   struct node *prev;        /* prev sibling link */
   struct node *children;    /* first chldren link */
   struct node *parent;      /* parent node */
-  term_t *term;           /* ノードの名前 */
+  token_t *token;
 } node_t;
 
 /* xml全体の情報 */
 typedef struct xml {
   node_t *root;
-  double version;
   char *filename;
-  char *encoding;
-  char *doctype;
+  TInfo info;
   void (*show)(struct xml *root);
 } xml_t;
 

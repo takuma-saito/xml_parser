@@ -8,6 +8,106 @@
 /* 次の要素 */
 term_t *term_next = NULL;
 
+/* XML の version とエンコーディングを読み込む */
+void set_encoding(int *version, char **encoding) {
+  char line[MAXLINE];
+  char text[MAXLINE];
+  int ret, pos = -1;
+  double version;
+  char ch = getch();
+  
+  /* 空白を飛ばす */
+  while (isspace(ch)) {
+    ch = getch();
+  }
+
+  if (ch == '<') {
+    if ((ch = getch()) != '?') {
+      pushch(ch);
+      pushch('<');
+      return;
+    }
+    else pushch(ch); ch = '<';
+    while (1) {
+      if (ch == '>') {
+        line[++pos] = ch;
+        break;
+      }
+      if (MAXLINE - 1 <= pos) {
+        err_exit("illegal version format");
+      }
+      line[++pos] = ch;
+      ch = getch();
+    }
+    line[++pos] = '\0';
+    ret = sscanf(line, "<?xml version=\"%lf\" encoding=\"%s\" ?>", version, text);
+    if (ret < 0) {
+        err_exit("illegal version format");
+    }
+  }
+  else {
+    err_exit("'<'が抜けています.\n");
+  }
+  *encoding = str(text);
+}
+
+/* doctype宣言の読込 */
+char *get_doctype() {
+  char ch = getch();
+  char line[MAXLINE] = "";
+  int pos = -1;
+  
+  /* 空白を飛ばす */
+  while (isspace(ch)) {
+    ch = getch();
+  }
+
+  /* Doctype宣言かどうかを確認 */
+  if (ch == '<') {
+    if ((ch = getch()) != '!') {
+      pushch(ch);
+      pushch('<');
+      return;
+    }
+    else {
+    }
+    while (1) {
+      if (ch == ' ') {
+        line[++pos] = ch;
+        break;
+      }
+      if (MAXLINE - 1 < pos) {
+        err_exit("doctype length error.");
+      }
+      line[++pos] = ch;
+      ch = getch();
+    }
+  }
+  line[++pos] = '\0';
+  if (strcmp(line, "!DOCTYPE")) {
+    bzero(line, sizeof(line));
+    pos = -1;
+    while (1) {
+      if (ch == '>') break;
+      if (MAXLINE - 1 < pos) {
+        err_exit("doctype length error.");
+      }
+      line[++pos] = ch;
+      ch = getch();
+    }
+  }
+  line[++pos] = '\0';
+  return str(line);
+}
+
+TInfo_t *get_info() {
+  TInfo_t *info;
+  info = (TInfo_t *)alloc(TInfo_t);
+  set_encoding(&info->encoding, &info->version);
+  info->doctype = get_doctype();
+  return info;
+}
+
 /* プロパティを得る */
 static prop_t *get_property(prop_t *curr_prop) {
   char key[MAXLINE] = "", value[MAXLINE] = "";
@@ -50,28 +150,26 @@ static prop_t *get_property(prop_t *curr_prop) {
   value[++pos] = '\0';
 
   prop = (prop_t *)alloc(sizeof(prop_t));
-  prop->key = (char *)alloc(sizeof(char) * (strlen(key) + 1));
-  prop->value = (char *)alloc(sizeof(char) * (strlen(value) + 1));
+  prop->key = str(key)
+  prop->value = str(value)
   prop->next = curr_prop;
   prop->prev = NULL;
-  strncpy(prop->key, key, strlen(key) + 1);
-  strncpy(prop->value, value, strlen(value) + 1);
   return prop;
 }
 
-term_t *get_term(void) {
+token_t *get_token() {
   char line[MAXNAME] = "";
-  term_t *term, *tmp;
+  TAttr *attr, *tmp;
   char ch;
   int counter = -1;
 
-  if (term_next != NULL) {
-    tmp = term_next;
-    term_next = NULL;
+  if (attr_next != NULL) {
+    tmp = attr_next;
+    attr_next = NULL;
     return tmp;
   }
   
-  term = alloc(sizeof(term_t));
+  attr = alloc(sizeof(attr_t));
   ch = getch();
   /* 空白の読み捨て */
   while (isspace(ch)) {
@@ -80,39 +178,39 @@ term_t *get_term(void) {
 
   if (ch == '<') {
     ch = getch();
-    /* term end */
+    /* attr end */
     if (ch == '/') {
-      term->type = TERM_END;
+      attr->type = TOKEN_END;
       ch = getch();
     }
     /* comment */
-    /* else if (ch  == '!') { */
-    /*   if (expectch("--")) { */
-    /*     term->type = TERM_COMMENT; */
-    /*     term->name = str(COMMENT); */
-    /*     term = get_comment(); */
-    /*     while (true) { */
-    /*       ch = getch(); */
-    /*       if (expectch("-->")) break; */
-    /*     } */
-    /*     term->type = TERM_COMMENT; */
-    /*   } */
-    /* } */
-    /* term start */
+    else if (ch  == '!') {
+      if (expectch("--")) {
+        token->type = TOKEN_COMMENT;
+        attr->name = str(COMMENT);
+        attr = get_comment();
+        while (true) {
+          ch = getch();
+          if (expectch("-->")) break;
+        }
+        token->type = TOKEN_COMMENT;
+      }
+    }
+    /* attr start */
     else {
-      term->type = TERM_START;
+      token->type = TOKEN_START;
     }
     while (true) {
       if (ch == '>') break;
       if (ch == '/') {
-        term->type = TERM_ELEMENT;
+        attr->type = TOKEN_ELEMENT;
         getch(); //読み捨て
         break;
       }
       
       /* 属性を入力 */
       if (ch == ' ') {
-        term->property = get_property(term->property);
+        attr->property = get_property(attr->property);
       }
       
       if (MAXNAME > ++counter) {
@@ -124,14 +222,14 @@ term_t *get_term(void) {
       ch = getch();
     }
     line[++counter] = '\0';
-    term->name = (char *)alloc(sizeof(char) * (strlen(line) + 1));
-    strncpy(term->name, line, strlen(line) + 1);
+    attr->name = (char *)alloc(sizeof(char) * (strlen(line) + 1));
+    strncpy(attr->name, line, strlen(line) + 1);
   }
   else if (ch == EOF) {
-    term->type = TERM_EOF;
+    attr->type = TOKEN_EOF;
   }
   else if (isprint(ch)) {
-    term->type = TERM_CONTENT;
+    attr->type = TOKEN_CONTENT;
     while (1) {      
       if (ch == '<') {
         pushch(ch);
@@ -146,14 +244,14 @@ term_t *get_term(void) {
       ch = getch();
     }
     line[++counter] = '\0';
-    term->name = (char *)alloc(sizeof(char) * (strlen(line) + 1));
-    strncpy(term->name, line, strlen(line) + 1);
+    attr->name = (char *)alloc(sizeof(char) * (strlen(line) + 1));
+    strncpy(attr->name, line, strlen(line) + 1);
   }
   else {
     /* ありえないことが起こった */
     err_exit("英数字以外の文字は読み込めません.\n");
   }
-  return term;
+  return attr;
 }
 
 /* 次の単語のタイプを予測する */

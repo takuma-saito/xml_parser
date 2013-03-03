@@ -18,3 +18,10 @@ void *alloc(size_t size) {
   if (ptr == NULL) err_exit("memory allocate error");
   return ptr;
 }
+
+char *str(char* string) {
+  char *ptr;
+  ptr = alloc(sizeof(char) * (strlen(string) + 1));
+  strncpy(ptr, string, strlen(string));
+  return ptr;
+}

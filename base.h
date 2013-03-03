@@ -20,4 +20,7 @@ extern void err_exit(char *fmt, ...);
 /* メモリを 0 クリアで割り当てる */
 extern void *alloc(size_t size);
 
+/* 文字列を取得する */
+extern char *str(char *string);
+
 #endif // __BASIC_H
